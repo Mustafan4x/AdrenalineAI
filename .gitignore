@@ -13,8 +13,12 @@ venv/
 models/*.pkl
 models/*.joblib
 models/*.h5
+data/
 *.csv
 *.parquet
+
+# Claude Code
+.claude/
 
 # IDE
 .vscode/

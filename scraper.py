@@ -21,6 +21,7 @@ EVENT_DETAIL_URL = "http://www.ufcstats.com/event-details/"
 FIGHT_DETAIL_URL = "http://www.ufcstats.com/fight-details/"
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+os.makedirs(DATA_DIR, exist_ok=True)
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
