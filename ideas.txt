@@ -1,1 +1,2 @@
 Add a login, Move the update Data button, Fix Fight history formatting, try to make it less command line-y, and easier to use for non-technical people, settings for people to change view, change fading animation, cut out garbage files at the end, refreshing should keep the light mode, make light to dark transition less choppy
+, fix accuracy since last time only got 9/13 right aka 70%
