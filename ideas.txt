@@ -1,10 +1,4 @@
 Add a login
-Fix Fight history formatting, some words too hard to read, and 10 of 10 issue formats ugly on a new line
 Try to make it less command line-y and easier to use for non-technical people on setup
-Settings for people to change view
-Change fading animation
 Cut out garbage files at the end
-Refreshing should keep the light mode
-Make light to dark transition less choppy
 Fix accuracy since last time only got 9/13 right aka 70%
-Make the background a little lighter on the dark mode?

@@ -52,12 +52,12 @@ DARK_THEME = {
     "GRADIENT_END": "rgba(211,47,47,0.06)",
 }
 LIGHT_THEME = {
-    "BG": "#f5f5f5", "CARD_BG": "#ffffff", "INNER_BG": "#eaeaea",
-    "TEXT": "#1a1a1a", "TEXT_DIM": "#1a1a1a", "TEXT_MUTED": "#1a1a1a",
-    "BORDER": "#ddd", "BORDER_HOVER": "#aaa",
-    "INITIALS_BG": "#e0e0e0", "INITIALS_BORDER": "#bbb",
-    "REASON_BG": "rgba(100,100,100,0.06)", "TABLE_HOVER": "rgba(211,47,47,0.05)",
-    "GRADIENT_END": "rgba(211,47,47,0.08)",
+    "BG": "#c8c8c8", "CARD_BG": "#d6d6d6", "INNER_BG": "#bfbfbf",
+    "TEXT": "#000000", "TEXT_DIM": "#000000", "TEXT_MUTED": "#111111",
+    "BORDER": "#aaa", "BORDER_HOVER": "#777",
+    "INITIALS_BG": "#bbb", "INITIALS_BORDER": "#888",
+    "REASON_BG": "rgba(60,60,60,0.1)", "TABLE_HOVER": "rgba(211,47,47,0.08)",
+    "GRADIENT_END": "rgba(211,47,47,0.12)",
 }
 
 IMAGE_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "image_cache")
@@ -111,13 +111,13 @@ st.set_page_config(
 
 # ── Theme state ──────────────────────────────────────────────────────────────
 if "theme" not in st.session_state:
-    st.session_state.theme = "dark"
+    st.session_state.theme = st.query_params.get("theme", "dark")
 T = DARK_THEME if st.session_state.theme == "dark" else LIGHT_THEME
 BG = T["BG"]; CARD_BG = T["CARD_BG"]; INNER_BG = T["INNER_BG"]
 LOGO_FILTER = (
-    "drop-shadow(0 0 4px rgba(211,47,47,0.5)) drop-shadow(0 0 10px rgba(211,47,47,0.2))"
+    "drop-shadow(0 0 2px rgba(211,47,47,0.25)) drop-shadow(0 0 5px rgba(211,47,47,0.1))"
     if st.session_state.theme == "dark"
-    else "drop-shadow(0 0 0 #000) drop-shadow(0 0 0 #000) drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000) drop-shadow(0 0 4px rgba(0,0,0,0.15))"
+    else "invert(1) drop-shadow(0 0 2px rgba(0,0,0,0.2)) drop-shadow(0 0 4px rgba(0,0,0,0.1))"
 )
 
 # ── CSS ──────────────────────────────────────────────────────────────────────
@@ -125,13 +125,16 @@ st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Russo+One&family=Nunito+Sans:wght@300;400;600;700;800&display=swap');
 
-    /* Scale-in animation */
-    @keyframes scaleIn {{
-        from {{ transform: scale(0.95); opacity: 0; }}
-        to {{ transform: scale(1); opacity: 1; }}
+    /* Slide-up fade animation */
+    @keyframes slideUp {{
+        from {{ transform: translateY(12px); opacity: 0; }}
+        to {{ transform: translateY(0); opacity: 1; }}
     }}
 
     /* Global */
+    *, *::before, *::after {{
+        transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, fill 0.4s ease;
+    }}
     .stApp {{
         background-color: {BG};
         color: {T["TEXT"]};
@@ -140,11 +143,11 @@ st.markdown(f"""
 
     /* Scale-in on tab content and main elements */
     .stTabs [role="tabpanel"] {{
-        animation: scaleIn 0.3s ease-out;
+        animation: slideUp 0.3s ease-out;
     }}
     .winner-container, .fighter-bg-card, .style-matchup,
     .event-header, .section-header, .header-bar {{
-        animation: scaleIn 0.3s ease-out;
+        animation: slideUp 0.3s ease-out;
     }}
 
     /* Smooth transitions on interactive elements */
@@ -213,7 +216,7 @@ st.markdown(f"""
         font-weight: 600;
         letter-spacing: 1.5px;
         text-transform: uppercase;
-        font-size: 0.75rem;
+        font-size: 0.95rem;
         padding: 0.8rem 0;
         border-radius: 0;
         background: transparent !important;
@@ -256,7 +259,7 @@ st.markdown(f"""
     .fighter-bg-card .f-weight {{
         font-family: {BF};
         color: {T["TEXT_MUTED"]};
-        font-size: 0.6rem;
+        font-size: 0.85rem;
         letter-spacing: 3px;
         text-transform: uppercase;
     }}
@@ -284,8 +287,8 @@ st.markdown(f"""
     }}
     .fighter-bg-card .f-record-label {{
         font-family: {BF};
-        color: {T["TEXT_MUTED"]};
-        font-size: 0.55rem;
+        color: {T["TEXT_DIM"]};
+        font-size: 0.8rem;
         letter-spacing: 2px;
         text-transform: uppercase;
     }}
@@ -329,7 +332,7 @@ st.markdown(f"""
     /* Section header */
     .section-header {{
         font-family: {BF};
-        font-size: 0.7rem;
+        font-size: 0.95rem;
         font-weight: 700;
         letter-spacing: 3px;
         text-transform: uppercase;
@@ -427,7 +430,7 @@ st.markdown(f"""
     }}
     .style-matchup .style-title {{
         font-family: {BF};
-        font-size: 0.65rem;
+        font-size: 0.95rem;
         color: {T["TEXT_MUTED"]};
         letter-spacing: 2px;
         text-transform: uppercase;
@@ -436,7 +439,7 @@ st.markdown(f"""
     .style-matchup .style-body {{
         font-family: {BF};
         color: {T["TEXT_DIM"]};
-        font-size: 0.85rem;
+        font-size: 1.05rem;
         line-height: 1.6;
     }}
 
@@ -448,7 +451,7 @@ st.markdown(f"""
         margin: 0.4rem 0;
         font-family: {BF};
         color: {T["TEXT_DIM"]};
-        font-size: 0.85rem;
+        font-size: 1.05rem;
         line-height: 1.5;
     }}
     .reason-box.against {{
@@ -544,6 +547,9 @@ st.markdown(f"""
     .stTabs .stTabs [data-baseweb="tab-list"] {{
         border-bottom: 1px solid {T["BORDER"]};
     }}
+    .stTabs .stTabs [data-baseweb="tab"] {{
+        font-size: 1.05rem;
+    }}
 
     /* Selectbox */
     .stSelectbox label {{
@@ -587,8 +593,13 @@ st.markdown(f"""
     }}
     [data-testid="stExpander"] summary {{
         font-family: {BF} !important;
-        font-size: 0.85rem !important;
+        font-size: 0.88rem !important;
         padding: 1rem 1.2rem !important;
+        color: {T["TEXT"]} !important;
+    }}
+    [data-testid="stExpander"] summary span {{
+        white-space: normal !important;
+        line-height: 1.5 !important;
     }}
 
     hr {{
@@ -602,10 +613,10 @@ st.markdown(f"""
     /* Segmented pill radio (theme switcher) */
     div[data-testid="stRadio"] > div {{
         display: inline-flex !important;
-        background: {T["BORDER"]} !important;
+        background: {"#1a1a1a" if st.session_state.theme == "dark" else "#333"} !important;
         border-radius: 8px !important;
         overflow: hidden !important;
-        border: 1px solid {T["BORDER_HOVER"]} !important;
+        border: 1px solid {"#333" if st.session_state.theme == "dark" else "#222"} !important;
         gap: 0 !important;
     }}
     div[data-testid="stRadio"] > div > label {{
@@ -615,7 +626,7 @@ st.markdown(f"""
         font-weight: 700 !important;
         letter-spacing: 1.5px !important;
         text-transform: uppercase !important;
-        color: {T["TEXT_MUTED"]} !important;
+        color: {"#fff" if st.session_state.theme == "light" else T["TEXT"]} !important;
         cursor: pointer !important;
         transition: all 0.2s !important;
         margin: 0 !important;
@@ -654,30 +665,34 @@ def _save_image_cache(cache: dict):
 def get_fighter_image_url(name: str) -> str:
     """Try to get a fighter image URL from UFC.com. Returns empty string on failure."""
     cache = _load_image_cache()
-    if name in cache:
+    if name in cache and cache[name]:
         return cache[name]
 
     # Build UFC.com athlete slug: "Conor McGregor" -> "conor-mcgregor"
     slug = name.strip().lower().replace(" ", "-")
     slug = "".join(c for c in slug if c.isalnum() or c == "-")
-    url = f"https://www.ufc.com/athlete/{slug}"
+    # Try the base slug plus common variations (Jr, III, etc.)
+    slugs_to_try = [slug, f"{slug}-jr", f"{slug}-iii", f"{slug}-ii"]
 
     img_url = ""
-    try:
-        resp = requests.get(url, headers=HEADERS, timeout=10)
-        if resp.status_code == 200:
-            soup = BeautifulSoup(resp.text, "html.parser")
-            # Try og:image meta tag first
-            og = soup.find("meta", property="og:image")
-            if og and og.get("content"):
-                img_url = og["content"]
-            else:
+    for attempt_slug in slugs_to_try:
+        try:
+            url = f"https://www.ufc.com/athlete/{attempt_slug}"
+            resp = requests.get(url, headers=HEADERS, timeout=10)
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                # Try og:image meta tag first
+                og = soup.find("meta", property="og:image")
+                if og and og.get("content"):
+                    img_url = og["content"]
+                    break
                 # Try the hero image
                 hero = soup.find("img", class_="hero-profile__image")
                 if hero and hero.get("src"):
                     img_url = hero["src"]
-    except Exception:
-        pass
+                    break
+        except Exception:
+            continue
 
     cache[name] = img_url
     _save_image_cache(cache)
@@ -864,7 +879,7 @@ def _render_confidence(prediction: dict):
     fb_last = fb_name.split()[-1].upper()
     st.markdown(
         f'<div style="background:{CARD_BG};border-radius:16px;padding:1.5rem;margin:0.5rem 0;">'
-        f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:1.2rem;">WIN PROBABILITY</div>'
+        f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:1.2rem;">WIN PROBABILITY</div>'
         # Names + percentages row
         f'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.6rem;">'
         f'<div><span style="font-family:{HF};color:#fff;font-size:1.1rem;text-transform:uppercase;">{fa_last}</span><span style="font-family:{BF};color:{AC};font-size:1.1rem;font-weight:800;margin-left:0.6rem;">{prob_a:.1f}%</span></div>'
@@ -931,7 +946,7 @@ def _render_feature_importance(prediction: dict):
 
     st.markdown(
         f'<div style="background:{CARD_BG};border-radius:16px;padding:1.5rem;margin:0.5rem 0;">'
-        f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">FEATURE IMPORTANCE</div>'
+        f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">FEATURE IMPORTANCE</div>'
         f'{legend}{"".join(rows)}</div>',
         unsafe_allow_html=True,
     )
@@ -984,7 +999,7 @@ def _render_tale_of_tape(prediction: dict):
 
     st.markdown(
         f'<div style="background:{CARD_BG};border-radius:16px;padding:1.5rem;margin:0.5rem 0;">'
-        f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">TALE OF THE TAPE</div>'
+        f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">TALE OF THE TAPE</div>'
         f'<div style="display:grid;grid-template-columns:65px 1fr 110px 1fr 65px;gap:0.5rem;margin-bottom:0.8rem;">'
         f'<div></div><div style="font-family:{HF};color:{T["TEXT"]};font-size:1rem;text-align:right;text-transform:uppercase;">{fa_last}</div>'
         f'<div></div>'
@@ -1078,7 +1093,7 @@ def _render_radar_chart(prediction: dict):
 
     st.markdown(
         f'<div style="background:{CARD_BG};border-radius:16px;padding:1.5rem;margin:0.5rem 0;">'
-        f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">FIGHTER COMPARISON</div>'
+        f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">FIGHTER COMPARISON</div>'
         f'{svg}</div>',
         unsafe_allow_html=True,
     )
@@ -1127,7 +1142,7 @@ def _render_historical_trends(prediction: dict):
 
     st.markdown(
         f'<div style="margin:0.5rem 0;">'
-        f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:0.8rem;padding-left:0.5rem;">RECENT FORM</div>'
+        f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:0.8rem;padding-left:0.5rem;">RECENT FORM</div>'
         f'<div style="display:flex;gap:1rem;">'
         f'{form_html(fa, form_a, AC)}'
         f'{form_html(fb, form_b, "#666")}'
@@ -1213,9 +1228,9 @@ def _render_fight_detail(fight_url: str, selected_fighter: str):
     def compare_row(label, val_a, val_b):
         return (
             f'<div style="display:grid;grid-template-columns:1fr 120px 1fr;align-items:center;padding:0.5rem 0;border-bottom:1px solid {T["BORDER"]};">'
-            f'<div style="font-family:{BF};color:{T["TEXT"]};font-size:0.9rem;font-weight:700;text-align:right;">{val_a}</div>'
-            f'<div style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.75rem;text-align:center;text-transform:uppercase;letter-spacing:1px;">{label}</div>'
-            f'<div style="font-family:{BF};color:{T["TEXT"]};font-size:0.9rem;font-weight:700;">{val_b}</div></div>'
+            f'<div style="font-family:{BF};color:{T["TEXT"]};font-size:0.9rem;font-weight:700;text-align:right;white-space:nowrap;">{val_a}</div>'
+            f'<div style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.75rem;text-align:center;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;">{label}</div>'
+            f'<div style="font-family:{BF};color:{T["TEXT"]};font-size:0.9rem;font-weight:700;white-space:nowrap;">{val_b}</div></div>'
         )
 
     # Header row with fighter names
@@ -1247,7 +1262,7 @@ def _render_fight_detail(fight_url: str, selected_fighter: str):
         clinch_a, clinch_b = get_pair(sig_row, "Clinch")
         ground_a, ground_b = get_pair(sig_row, "Ground")
 
-        st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin:1rem 0 0.6rem 0;">SIGNIFICANT STRIKES BREAKDOWN</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin:1rem 0 0.6rem 0;">SIGNIFICANT STRIKES BREAKDOWN</div>', unsafe_allow_html=True)
 
         # Target area bars
         def strike_bar(label, val_a_str, val_b_str):
@@ -1261,12 +1276,12 @@ def _render_fight_detail(fight_url: str, selected_fighter: str):
                 f'<div style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.4rem;">{label}</div>'
                 f'<div style="display:grid;grid-template-columns:1fr 10px 1fr;gap:0.3rem;align-items:center;">'
                 f'<div style="display:flex;align-items:center;gap:0.5rem;justify-content:flex-end;">'
-                f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:0.8rem;font-weight:700;">{val_a_str}</span>'
+                f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:0.8rem;font-weight:700;white-space:nowrap;">{val_a_str}</span>'
                 f'<div style="width:{pct_a:.0f}%;max-width:100%;height:16px;background:{AC};border-radius:3px 0 0 3px;min-width:2px;"></div></div>'
                 f'<div></div>'
                 f'<div style="display:flex;align-items:center;gap:0.5rem;">'
                 f'<div style="width:{pct_b:.0f}%;max-width:100%;height:16px;background:#555;border-radius:0 3px 3px 0;min-width:2px;"></div>'
-                f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:0.8rem;font-weight:700;">{val_b_str}</span></div>'
+                f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:0.8rem;font-weight:700;white-space:nowrap;">{val_b_str}</span></div>'
                 f'</div></div>'
             )
 
@@ -1281,7 +1296,7 @@ def _render_fight_detail(fight_url: str, selected_fighter: str):
 
     # Per-round breakdown
     if len(totals) > 1:
-        st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin:1rem 0 0.6rem 0;">PER-ROUND BREAKDOWN</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin:1rem 0 0.6rem 0;">PER-ROUND BREAKDOWN</div>', unsafe_allow_html=True)
 
         for ri, rnd_row in enumerate(totals[1:], 1):
             r_sig_a, r_sig_b = get_pair(rnd_row, "Sig. str.")
@@ -1299,15 +1314,15 @@ def _render_fight_detail(fight_url: str, selected_fighter: str):
                 f'<div style="background:{CARD_BG};border-radius:10px;padding:1rem 1.2rem;margin-bottom:0.4rem;">'
                 f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">'
                 f'<span style="font-family:{HF};color:{T["TEXT"]};font-size:0.85rem;">ROUND {ri}</span>'
-                f'<span style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.75rem;">KD: {r_kd_a}-{r_kd_b} | TD: {r_td_a} vs {r_td_b} | Ctrl: {r_ctrl_a} vs {r_ctrl_b}</span></div>'
+                f'<span style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.75rem;white-space:nowrap;">KD: {r_kd_a}-{r_kd_b} | TD: {r_td_a} vs {r_td_b} | Ctrl: {r_ctrl_a} vs {r_ctrl_b}</span></div>'
                 f'<div style="display:grid;grid-template-columns:1fr 10px 1fr;gap:0.3rem;align-items:center;">'
                 f'<div style="display:flex;align-items:center;gap:0.5rem;justify-content:flex-end;">'
-                f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:0.8rem;font-weight:700;">{r_sig_a}</span>'
+                f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:0.8rem;font-weight:700;white-space:nowrap;">{r_sig_a}</span>'
                 f'<div style="width:{bar_a:.0f}%;max-width:100%;height:14px;background:{AC};border-radius:3px 0 0 3px;min-width:2px;"></div></div>'
                 f'<div></div>'
                 f'<div style="display:flex;align-items:center;gap:0.5rem;">'
                 f'<div style="width:{bar_b:.0f}%;max-width:100%;height:14px;background:#555;border-radius:0 3px 3px 0;min-width:2px;"></div>'
-                f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:0.8rem;font-weight:700;">{r_sig_b}</span></div>'
+                f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:0.8rem;font-weight:700;white-space:nowrap;">{r_sig_b}</span></div>'
                 f'</div></div>',
                 unsafe_allow_html=True,
             )
@@ -1395,14 +1410,43 @@ def main():
     else:
         stats_inner = f'<div class="h-stat"><span class="h-num">{n_fighters}</span><span class="h-label">Fighters</span></div><div class="h-divider"></div><div class="h-stat"><span class="h-num">{n_fights}</span><span class="h-label">Fights</span></div>'
 
-    st.markdown(f'<div class="header-bar"><div style="display:flex;align-items:center;gap:0.8rem;"><img src="{LOGO_SRC}" style="width:44px;height:44px;object-fit:contain;filter:{LOGO_FILTER};"><div class="brand">ADRENALINE</div></div><div class="header-stats">{stats_inner}</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="header-bar"><div style="display:flex;align-items:center;gap:0.8rem;"><img src="{LOGO_SRC}" style="width:80px;height:80px;object-fit:contain;filter:{LOGO_FILTER};"><div class="brand">ADRENALINE</div></div><div class="header-stats">{stats_inner}</div></div>', unsafe_allow_html=True)
 
     # ── Navigation via underline tabs ────────────────────────────────────────
     fighter_names = sorted(fighters_clean["name"].dropna().unique().tolist())
 
-    tab_fullcard, tab_matchup, tab_profile, tab_news, tab_settings = st.tabs([
-        "Full Card Predictions", "Custom Matchup", "Fighter Profile", "News", "Settings"
-    ])
+    _main_tab_names = ["Full Card Predictions", "Custom Matchup", "Fighter Profile", "News", "Settings"]
+    tab_fullcard, tab_matchup, tab_profile, tab_news, tab_settings = st.tabs(_main_tab_names)
+
+    # Persist active tab across refreshes via query params + JS
+    import streamlit.components.v1 as _components
+    _components.html("""
+    <script>
+    (function() {
+        const doc = window.parent.document;
+        const params = new URLSearchParams(window.parent.location.search);
+        const savedTab = params.get('tab');
+        if (savedTab) {
+            const tabs = doc.querySelectorAll('[data-baseweb="tab"]');
+            tabs.forEach(t => {
+                if (t.textContent.trim() === savedTab) t.click();
+            });
+        }
+        const tabList = doc.querySelector('[data-baseweb="tab-list"]');
+        if (tabList) {
+            tabList.addEventListener('click', function(e) {
+                const tab = e.target.closest('[data-baseweb="tab"]');
+                if (tab) {
+                    const name = tab.textContent.trim();
+                    const url = new URL(window.parent.location);
+                    url.searchParams.set('tab', name);
+                    window.parent.history.replaceState({}, '', url);
+                }
+            });
+        }
+    })();
+    </script>
+    """, height=0)
 
     # ── Full Card Predictions ────────────────────────────────────────────────
     with tab_fullcard:
@@ -1532,13 +1576,13 @@ def main():
                 )
 
                 # Physical attributes
-                st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin:1.5rem 0 0.8rem 0;">PHYSICAL ATTRIBUTES</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin:1.5rem 0 0.8rem 0;">PHYSICAL ATTRIBUTES</div>', unsafe_allow_html=True)
 
                 def attr_row(label, value):
                     return (
                         f'<div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid {T["BORDER"]};">'
-                        f'<span style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.85rem;">{label}</span>'
-                        f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:0.9rem;font-weight:700;">{value}</span></div>'
+                        f'<span style="font-family:{BF};color:{T["TEXT_DIM"]};font-size:1rem;">{label}</span>'
+                        f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:1.05rem;font-weight:700;">{value}</span></div>'
                     )
 
                 attrs = attr_row("Age", age_str if age_str else "--")
@@ -1551,7 +1595,7 @@ def main():
                 st.markdown(f'<div style="background:{CARD_BG};border-radius:16px;padding:1.2rem 1.5rem;">{attrs}</div>', unsafe_allow_html=True)
 
                 # Career stats
-                st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin:1.5rem 0 0.8rem 0;">CAREER STATISTICS</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin:1.5rem 0 0.8rem 0;">CAREER STATISTICS</div>', unsafe_allow_html=True)
 
                 slpm = f.get("slpm", 0) or 0
                 str_acc = f.get("str_acc", 0) or 0
@@ -1571,8 +1615,8 @@ def main():
                     return (
                         f'<div style="margin-bottom:0.6rem;">'
                         f'<div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">'
-                        f'<span style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.8rem;">{label}</span>'
-                        f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:0.85rem;font-weight:700;">{display}</span></div>'
+                        f'<span style="font-family:{BF};color:{T["TEXT_DIM"]};font-size:1rem;">{label}</span>'
+                        f'<span style="font-family:{BF};color:{T["TEXT"]};font-size:1.05rem;font-weight:700;">{display}</span></div>'
                         f'<div style="background:{T["BORDER"]};border-radius:4px;height:20px;overflow:hidden;">'
                         f'<div style="width:{pct:.0f}%;height:100%;background:{AC};border-radius:4px;transition:width 0.6s ease;"></div></div></div>'
                     )
@@ -1589,7 +1633,7 @@ def main():
                 st.markdown(f'<div style="background:{CARD_BG};border-radius:16px;padding:1.2rem 1.5rem;">{stats_html}</div>', unsafe_allow_html=True)
 
                 # Fight history (scraped on demand from UFCStats)
-                st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin:1.5rem 0 0.8rem 0;">FIGHT HISTORY</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin:1.5rem 0 0.8rem 0;">FIGHT HISTORY</div>', unsafe_allow_html=True)
 
                 fighter_url = f.get("url", "")
                 if fighter_url:
@@ -1601,6 +1645,7 @@ def main():
                             history = []
 
                     if history:
+                        total_shown = min(len(history), 15)
                         for fi, fight in enumerate(history[:15]):
                             result = fight.get("result", "").strip().upper()
                             opponent = fight.get("opponent", "Unknown")
@@ -1608,7 +1653,7 @@ def main():
                             rnd = fight.get("round", "")
                             method_short = method.split("\n")[0].strip() if method else ""
                             res_tag = "WIN" if result == "WIN" else "LOSS" if result == "LOSS" else result
-                            label = f"{res_tag}  --  {opponent}  --  {method_short}  (R{rnd})"
+                            label = f"{res_tag} vs {opponent}  \u00b7  {method_short} (R{rnd})  \u00b7  {fi+1}/{total_shown}"
 
                             with st.expander(label, expanded=False):
                                 fight_url = fight.get("fight_url", "")
@@ -1633,7 +1678,7 @@ def main():
                     st.info("No fighter URL available to load history.")
 
                 # Upcoming fights for this fighter
-                st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin:1.5rem 0 0.8rem 0;">UPCOMING FIGHTS</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin:1.5rem 0 0.8rem 0;">UPCOMING FIGHTS</div>', unsafe_allow_html=True)
 
                 try:
                     upcoming_check = get_upcoming_card()
@@ -1690,6 +1735,37 @@ def main():
             available_cats = [c for c in categories_order if c in grouped]
             if available_cats:
                 news_tabs = st.tabs(available_cats)
+
+                # Persist active news tab across refreshes
+                _components.html("""
+                <script>
+                (function() {
+                    const doc = window.parent.document;
+                    const params = new URLSearchParams(window.parent.location.search);
+                    const savedTab = params.get('newstab');
+                    const tabLists = doc.querySelectorAll('[data-baseweb="tab-list"]');
+                    const newsList = tabLists.length > 1 ? tabLists[tabLists.length - 1] : null;
+                    if (savedTab && newsList) {
+                        const tabs = newsList.querySelectorAll('[data-baseweb="tab"]');
+                        tabs.forEach(t => {
+                            if (t.textContent.trim() === savedTab) t.click();
+                        });
+                    }
+                    if (newsList) {
+                        newsList.addEventListener('click', function(e) {
+                            const tab = e.target.closest('[data-baseweb="tab"]');
+                            if (tab) {
+                                const name = tab.textContent.trim();
+                                const url = new URL(window.parent.location);
+                                url.searchParams.set('newstab', name);
+                                window.parent.history.replaceState({}, '', url);
+                            }
+                        });
+                    }
+                })();
+                </script>
+                """, height=0)
+
                 for news_tab, cat in zip(news_tabs, available_cats):
                     with news_tab:
                         for i, article in enumerate(grouped[cat]):
@@ -1733,9 +1809,11 @@ def main():
         )
         if choice == "Dark" and not current_is_dark:
             st.session_state.theme = "dark"
+            st.query_params["theme"] = "dark"
             st.rerun()
         elif choice == "Light" and current_is_dark:
             st.session_state.theme = "light"
+            st.query_params["theme"] = "light"
             st.rerun()
 
         st.markdown(f'<div style="border-top:1px solid {T["BORDER"]};margin:2rem 0;"></div>', unsafe_allow_html=True)
@@ -1747,7 +1825,7 @@ def main():
             unsafe_allow_html=True,
         )
         st.markdown(
-            f'<div style="font-family:{BF};color:{T["TEXT_DIM"]};font-size:0.85rem;margin-bottom:0.8rem;">'
+            f'<div style="font-family:{BF};color:{T["TEXT_DIM"]};font-size:1.1rem;margin-bottom:0.8rem;">'
             f'Scrape the latest events and update fighter stats. Takes 1-2 minutes.</div>',
             unsafe_allow_html=True,
         )
