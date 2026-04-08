@@ -51,12 +51,12 @@ DARK_THEME = {
     "GRADIENT_END": "rgba(211,47,47,0.06)",
 }
 LIGHT_THEME = {
-    "BG": "#c8c8c8", "CARD_BG": "#d6d6d6", "INNER_BG": "#bfbfbf",
-    "TEXT": "#000000", "TEXT_DIM": "#000000", "TEXT_MUTED": "#111111",
-    "BORDER": "#aaa", "BORDER_HOVER": "#777",
-    "INITIALS_BG": "#bbb", "INITIALS_BORDER": "#888",
-    "REASON_BG": "rgba(60,60,60,0.1)", "TABLE_HOVER": "rgba(211,47,47,0.08)",
-    "GRADIENT_END": "rgba(211,47,47,0.12)",
+    "BG": "#f5f5f5", "CARD_BG": "#ffffff", "INNER_BG": "#eaeaea",
+    "TEXT": "#1a1a1a", "TEXT_DIM": "#444444", "TEXT_MUTED": "#666666",
+    "BORDER": "#ddd", "BORDER_HOVER": "#bbb",
+    "INITIALS_BG": "#e0e0e0", "INITIALS_BORDER": "#ccc",
+    "REASON_BG": "rgba(60,60,60,0.06)", "TABLE_HOVER": "rgba(211,47,47,0.06)",
+    "GRADIENT_END": "rgba(211,47,47,0.08)",
 }
 
 IMAGE_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "image_cache")
