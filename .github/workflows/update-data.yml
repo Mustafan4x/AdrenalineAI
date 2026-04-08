@@ -33,11 +33,21 @@ jobs:
               print('No new data found.')
           "
 
+      - name: Update odds data
+        run: |
+          python -c "
+          import pandas as pd
+          from odds import build_odds_database
+          fights_df = pd.read_csv('data/fights.csv')
+          odds_df = build_odds_database(fights_df, use_cache=False)
+          print(f'Odds entries: {len(odds_df)}')
+          "
+
       - name: Commit and push if data changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/fighters.csv data/fights.csv data/upcoming.json
+          git add data/fighters.csv data/fights.csv data/upcoming.json data/odds.csv
           if git diff --cached --quiet; then
             echo "No data changes to commit."
           else

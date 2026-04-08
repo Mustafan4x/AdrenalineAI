@@ -8,7 +8,7 @@ import os
 import numpy as np
 import pandas as pd
 import joblib
-from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.model_selection import cross_val_score, StratifiedKFold, GroupKFold
 from xgboost import XGBClassifier
 
 from preprocessing import (
@@ -46,12 +46,12 @@ class UFCPredictor:
         # Enrich with recent form, opponent quality, finish rates, weight class
         self.fighters_df = enrich_fighters(self.fighters_df, fights_df)
 
-    def train(self, X: np.ndarray = None, y: np.ndarray = None):
+    def train(self, X: np.ndarray = None, y: np.ndarray = None, groups: np.ndarray = None):
         """Train the XGBoost model."""
         if X is None or y is None:
             if self.fighters_df is None or self.fights_df is None:
                 raise ValueError("No data loaded. Call load_data() first.")
-            X, y = build_training_data(self.fighters_df, self.fights_df, self.odds_df)
+            X, y, groups = build_training_data(self.fighters_df, self.fights_df, self.odds_df)
 
         if len(X) == 0:
             raise ValueError("No valid training samples found.")
@@ -71,9 +71,14 @@ class UFCPredictor:
             eval_metric="logloss",
         )
 
-        # Cross-validation
-        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-        self.cv_scores = cross_val_score(self.model, X, y, cv=skf, scoring="accuracy")
+        # Cross-validation using GroupKFold to prevent mirrored fight pairs
+        # from leaking across folds
+        if groups is not None:
+            gkf = GroupKFold(n_splits=5)
+            self.cv_scores = cross_val_score(self.model, X, y, cv=gkf, groups=groups, scoring="accuracy")
+        else:
+            skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+            self.cv_scores = cross_val_score(self.model, X, y, cv=skf, scoring="accuracy")
         print(f"Cross-validation accuracy: {self.cv_scores.mean():.3f} (+/- {self.cv_scores.std():.3f})")
 
         # Final fit on all data

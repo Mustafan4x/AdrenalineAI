@@ -441,6 +441,9 @@ def incremental_update(max_new_events: int = 5, progress_callback=None) -> dict:
     fighters_path = os.path.join(DATA_DIR, "fighters.csv")
     fights_path = os.path.join(DATA_DIR, "fights.csv")
 
+    if not os.path.exists(fighters_path) or not os.path.exists(fights_path):
+        return {"new_fights": 0, "updated_fighters": 0, "new_events": []}
+
     fighters_df = pd.read_csv(fighters_path)
     fights_df = pd.read_csv(fights_path)
 
@@ -516,7 +519,7 @@ def get_upcoming_card() -> list[dict]:
         if os.path.exists(cache_path):
             with open(cache_path) as f:
                 return json.load(f)
-        return []
+        return {}
 
     # Get the first event with fights listed
     for event in events:

@@ -25,12 +25,15 @@ BFO_BASE = "https://www.bestfightodds.com"
 
 
 def american_to_implied_prob(odds: int) -> float:
-    """Convert American moneyline odds to implied probability (0-1)."""
+    """Convert American moneyline odds to implied probability (0-1).
+
+    Returns 0.5 (neutral) for invalid odds (0 or None).
+    """
+    if not odds or odds == 0:
+        return 0.5
     if odds > 0:
         return 100 / (odds + 100)
-    elif odds < 0:
-        return abs(odds) / (abs(odds) + 100)
-    return 0.5
+    return abs(odds) / (abs(odds) + 100)
 
 
 def _parse_american_odds(text: str) -> int | None:
@@ -237,9 +240,11 @@ def _match_fighter_name(bfo_name: str, fights_df_names: set) -> str | None:
             return swapped
 
     # Fuzzy: check if bfo name is contained in any fights name or vice versa
-    for name in fights_df_names:
-        if norm in name or name in norm:
-            return name
+    # Require minimum length to avoid false matches like "li" matching "ali"
+    if len(norm) >= 6:
+        for name in fights_df_names:
+            if len(name) >= 6 and (norm in name or name in norm):
+                return name
 
     return None
 

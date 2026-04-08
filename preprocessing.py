@@ -131,7 +131,11 @@ def compute_recent_form(fights_df: pd.DataFrame, fighter_name: str, fight_index:
 
 
 def compute_opponent_quality(fights_df: pd.DataFrame, fighter_lookup: dict, fighter_name: str, fight_index: dict = None, n: int = 5) -> float:
-    """Compute average win rate of a fighter's recent opponents."""
+    """Compute average win rate of a fighter's recent opponents.
+
+    Uses fights_df to compute opponent win rates from fight history,
+    not from the static fighter lookup (which would leak future data).
+    """
     if fight_index:
         indices = fight_index.get(fighter_name, [])
         fighter_fights = fights_df.loc[indices].head(n)
@@ -146,11 +150,13 @@ def compute_opponent_quality(fights_df: pd.DataFrame, fighter_lookup: dict, figh
     opponent_win_rates = []
     for _, fight in fighter_fights.iterrows():
         opponent = fight["fighter_b"] if fight["fighter_a"] == fighter_name else fight["fighter_a"]
-        opp = fighter_lookup.get(opponent.lower().strip())
-        if opp is not None:
-            total = opp.get("wins", 0) + opp.get("losses", 0)
-            if total > 0:
-                opponent_win_rates.append(opp["wins"] / total)
+        # Compute opponent's win rate from the available fights_df (temporal-safe)
+        opp_fights = fights_df[
+            (fights_df["fighter_a"] == opponent) | (fights_df["fighter_b"] == opponent)
+        ]
+        if len(opp_fights) > 0:
+            opp_wins = (opp_fights["winner"] == opponent).sum()
+            opponent_win_rates.append(opp_wins / len(opp_fights))
 
     return np.mean(opponent_win_rates) if opponent_win_rates else 0.5
 
@@ -411,13 +417,21 @@ def build_training_data(fighters_df: pd.DataFrame, fights_df: pd.DataFrame, odds
         if name:
             fighter_lookup[name.lower()] = row
 
-    # Pre-compute weight class tiers
-    fighter_weight_classes = {}
-    for _, fight in fights_df.iterrows():
-        wc = fight.get("weight_class", "")
-        for name in [fight.get("fighter_a", ""), fight.get("fighter_b", "")]:
+    n_fights = len(fights_df)
+    fight_rows = list(fights_df.iterrows())
+
+    # Pre-compute weight class tiers per fight position (temporal-safe)
+    # Build cumulative weight class info from the end backward
+    fighter_wc_cumulative = [None] * (n_fights + 1)
+    fighter_wc_cumulative[n_fights] = {}
+    for j in range(n_fights - 1, -1, -1):
+        _, fight_row = fight_rows[j]
+        prev = {k: list(v) for k, v in fighter_wc_cumulative[j + 1].items()}
+        wc = fight_row.get("weight_class", "")
+        for name in [fight_row.get("fighter_a", ""), fight_row.get("fighter_b", "")]:
             if name:
-                fighter_weight_classes.setdefault(name, []).append(wc)
+                prev.setdefault(name, []).append(wc)
+        fighter_wc_cumulative[j] = prev
 
     # Build odds lookup: (fighter_a_norm, fighter_b_norm) -> (prob_a, prob_b)
     odds_lookup = {}
@@ -428,10 +442,22 @@ def build_training_data(fighters_df: pd.DataFrame, fights_df: pd.DataFrame, odds
             odds_lookup[(fa, fb)] = (row["implied_prob_a"], row["implied_prob_b"])
             odds_lookup[(fb, fa)] = (row["implied_prob_b"], row["implied_prob_a"])
 
+    # Pre-build fight indices for all positions (O(N) instead of O(N^2))
+    cumulative_indices = [None] * (n_fights + 1)
+    cumulative_indices[n_fights] = {}  # empty index for the last fight
+    for j in range(n_fights - 1, -1, -1):
+        idx, fight_row = fight_rows[j]
+        prev = {k: list(v) for k, v in cumulative_indices[j + 1].items()}
+        for name in [fight_row.get("fighter_a", ""), fight_row.get("fighter_b", "")]:
+            if name:
+                prev.setdefault(name, []).append(idx)
+        cumulative_indices[j] = prev
+
     rng = np.random.RandomState(42)
 
     X_list = []
     y_list = []
+    fight_ids = []
 
     for i, (_, fight) in enumerate(fights_df.iterrows()):
         fa_name = str(fight.get("fighter_a", "")).strip()
@@ -443,7 +469,7 @@ def build_training_data(fighters_df: pd.DataFrame, fights_df: pd.DataFrame, odds
 
         # Use only fights before this one to compute temporal features
         fights_before = fights_df.iloc[i + 1:]  # fights are ordered most-recent-first
-        fight_idx_before = _build_fighter_fights_index(fights_before)
+        fight_idx_before = cumulative_indices[i + 1]
 
         fa = fighter_lookup[fa_name.lower()].copy()
         fb = fighter_lookup[fb_name.lower()].copy()
@@ -457,9 +483,10 @@ def build_training_data(fighters_df: pd.DataFrame, fights_df: pd.DataFrame, odds
         for key, val in fb_temporal.items():
             fb[key] = val
 
-        # Set weight class tier
-        wc_a = fighter_weight_classes.get(fa_name, [])
-        wc_b = fighter_weight_classes.get(fb_name, [])
+        # Set weight class tier from only prior fights
+        wc_before = fighter_wc_cumulative[i + 1]
+        wc_a = wc_before.get(fa_name, [])
+        wc_b = wc_before.get(fb_name, [])
         fa["weight_class_tier"] = WEIGHT_CLASS_ORDER.get(max(set(wc_a), key=wc_a.count), 7) if wc_a else 7
         fb["weight_class_tier"] = WEIGHT_CLASS_ORDER.get(max(set(wc_b), key=wc_b.count), 7) if wc_b else 7
 
@@ -488,14 +515,16 @@ def build_training_data(fighters_df: pd.DataFrame, fights_df: pd.DataFrame, odds
 
             X_list.append(diff.flatten())
             y_list.append(label)
+            fight_ids.append(i)  # same fight ID for both orderings
 
     if not X_list:
-        return np.array([]), np.array([])
+        return np.array([]), np.array([]), np.array([])
 
     X = np.array(X_list)
     y = np.array(y_list)
+    groups = np.array(fight_ids)
 
-    return X, y
+    return X, y, groups
 
 
 def get_fighter_by_name(fighters_df: pd.DataFrame, name: str) -> pd.Series | None:

@@ -870,8 +870,8 @@ def display_fighter_cards(fa: dict, fb: dict):
 
 def display_winner(prediction: dict):
     """Render the side-highlight winner display."""
-    winner = esc(prediction["predicted_winner"])
-    loser = esc(prediction.get("predicted_loser", ""))
+    winner = prediction["predicted_winner"]
+    loser = prediction.get("predicted_loser", "")
     confidence = prediction["confidence"]
 
     winner_last = esc(winner.split()[-1].upper()) if winner else "?"
@@ -1688,9 +1688,9 @@ def main():
                                     td = fight.get("td", [])
                                     st.markdown(
                                         f'<div style="background:{CARD_BG};border-radius:12px;padding:1rem;">'
-                                        f'<div style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.85rem;">Sig. Strikes: {sig_str[0] if sig_str else "--"} vs {sig_str[1] if len(sig_str) > 1 else "--"}</div>'
-                                        f'<div style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.85rem;">Knockdowns: {kd[0] if kd else "--"} vs {kd[1] if len(kd) > 1 else "--"}</div>'
-                                        f'<div style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.85rem;">Takedowns: {td[0] if td else "--"} vs {td[1] if len(td) > 1 else "--"}</div>'
+                                        f'<div style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.85rem;">Sig. Strikes: {esc(sig_str[0]) if sig_str else "--"} vs {esc(sig_str[1]) if len(sig_str) > 1 else "--"}</div>'
+                                        f'<div style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.85rem;">Knockdowns: {esc(kd[0]) if kd else "--"} vs {esc(kd[1]) if len(kd) > 1 else "--"}</div>'
+                                        f'<div style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:0.85rem;">Takedowns: {esc(td[0]) if td else "--"} vs {esc(td[1]) if len(td) > 1 else "--"}</div>'
                                         f'</div>',
                                         unsafe_allow_html=True,
                                     )
