@@ -560,6 +560,12 @@ st.markdown(f"""
         text-transform: uppercase;
         font-size: 0.7rem !important;
     }}
+    .stSelectbox [data-baseweb="select"] {{
+        font-family: {BF} !important;
+    }}
+    .stSelectbox [data-baseweb="select"] * {{
+        font-family: {BF} !important;
+    }}
 
     /* Metrics */
     [data-testid="stMetricValue"] {{
