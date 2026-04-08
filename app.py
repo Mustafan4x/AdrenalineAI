@@ -143,7 +143,7 @@ st.markdown(f"""
     /* Scale-in on tab content and main elements */
     .stTabs [role="tabpanel"] {{
         animation: slideUp 0.3s ease-out;
-        zoom: 0.78;
+        zoom: 0.82;
     }}
     .winner-container, .fighter-bg-card, .style-matchup,
     .event-header, .section-header, .header-bar {{
