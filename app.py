@@ -159,7 +159,8 @@ st.markdown(f"""
     }}
 
     /* Hide chrome */
-    #MainMenu, footer, header {{ visibility: hidden; }}
+    #MainMenu, footer, header {{ visibility: hidden; height: 0; padding: 0; margin: 0; }}
+    .block-container {{ padding-top: 1rem !important; }}
 
     /* Header bar with stats */
     .header-bar {{
