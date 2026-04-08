@@ -4,13 +4,11 @@ Gradient Boosting classifier with feature importance and prediction explanations
 """
 
 import os
-import json
 
 import numpy as np
 import pandas as pd
 import joblib
 from sklearn.model_selection import cross_val_score, StratifiedKFold
-from sklearn.metrics import accuracy_score, classification_report
 from xgboost import XGBClassifier
 
 from preprocessing import (
@@ -18,11 +16,8 @@ from preprocessing import (
     build_training_data,
     clean_fighter_data,
     create_difference_matrix,
-    create_feature_vector,
     get_fighter_by_name,
-    classify_combat_style,
     get_style_matchup_description,
-    compute_win_streak,
     enrich_fighters,
 )
 
@@ -38,17 +33,12 @@ class UFCPredictor:
         self.fighters_df = None
         self.fights_df = None
         self.is_trained = False
-        self.training_accuracy = None
         self.cv_scores = None
 
     def load_data(self, fighters_df: pd.DataFrame, fights_df: pd.DataFrame):
         """Load fighter and fight data."""
         self.fighters_df = clean_fighter_data(fighters_df)
         self.fights_df = fights_df
-        # Compute win streaks
-        for idx, row in self.fighters_df.iterrows():
-            name = row.get("name", "")
-            self.fighters_df.at[idx, "win_streak"] = compute_win_streak(fights_df, name)
         # Enrich with recent form, opponent quality, finish rates, weight class
         self.fighters_df = enrich_fighters(self.fighters_df, fights_df)
 
@@ -65,13 +55,14 @@ class UFCPredictor:
         print(f"Training on {len(X)} fight samples with {X.shape[1]} features...")
 
         self.model = XGBClassifier(
-            n_estimators=300,
-            max_depth=6,
+            n_estimators=150,
+            max_depth=4,
             learning_rate=0.05,
             subsample=0.8,
             colsample_bytree=0.8,
-            reg_alpha=0.1,
-            reg_lambda=1.0,
+            reg_alpha=0.5,
+            reg_lambda=2.0,
+            min_child_weight=3,
             random_state=42,
             eval_metric="logloss",
         )
@@ -83,9 +74,6 @@ class UFCPredictor:
 
         # Final fit on all data
         self.model.fit(X, y)
-        self.training_accuracy = accuracy_score(y, self.model.predict(X))
-        print(f"Training accuracy: {self.training_accuracy:.3f}")
-
         self.is_trained = True
 
     def save(self, path: str = None):
@@ -97,7 +85,6 @@ class UFCPredictor:
         joblib.dump({
             "model": self.model,
             "cv_scores": self.cv_scores,
-            "training_accuracy": self.training_accuracy,
         }, path)
         print(f"Model saved to {path}")
 
@@ -109,7 +96,6 @@ class UFCPredictor:
         data = joblib.load(path)
         self.model = data["model"]
         self.cv_scores = data.get("cv_scores")
-        self.training_accuracy = data.get("training_accuracy")
         self.is_trained = True
         print("Model loaded successfully.")
 
@@ -222,14 +208,14 @@ class UFCPredictor:
             "height_cm": "height advantage",
             "weight_kg": "weight advantage",
             "reach_cm": "reach/wingspan advantage",
-            "age": "age factor",
+            "age": "youth/experience advantage",
             "wins": "more career wins",
-            "losses": "fewer career losses",
+            "losses": "more career losses (battle-tested)",
             "total_fights": "more experience (total fights)",
             "win_rate": "higher win rate",
             "slpm": "higher striking output (sig. strikes per minute)",
             "str_acc": "better striking accuracy",
-            "sapm": "absorbs fewer strikes per minute",
+            "sapm": "higher strike absorption rate",
             "str_def": "better striking defense",
             "td_avg": "more takedown attempts per fight",
             "td_acc": "better takedown accuracy",

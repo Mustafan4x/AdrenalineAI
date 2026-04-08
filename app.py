@@ -6,8 +6,10 @@ Full-stack app for predicting UFC fight outcomes with visual explainability.
 import os
 import sys
 import json
-import hashlib
+import html as html_lib
 import base64
+import random
+import math
 
 import streamlit as st
 import pandas as pd
@@ -33,7 +35,6 @@ from preprocessing import (
     FEATURE_COLUMNS,
 )
 from model import UFCPredictor
-import math
 
 # ── Design tokens ────────────────────────────────────────────────────────────
 HF = "'Russo One', sans-serif"
@@ -68,9 +69,6 @@ LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "lo
 with open(LOGO_PATH, "rb") as _lf:
     LOGO_B64 = base64.b64encode(_lf.read()).decode()
 LOGO_SRC = f"data:image/png;base64,{LOGO_B64}"
-LOGO_FILTER = "drop-shadow(0 0 4px rgba(211,47,47,0.5)) drop-shadow(0 0 10px rgba(211,47,47,0.2))"
-
-import random
 LOADING_SAYINGS = [
     "AdrenalineAI pumping...",
     "Stepping into the octagon...",
@@ -118,6 +116,10 @@ LOGO_FILTER = (
     if st.session_state.theme == "dark"
     else "invert(1) drop-shadow(0 0 2px rgba(0,0,0,0.2)) drop-shadow(0 0 4px rgba(0,0,0,0.1))"
 )
+
+def esc(s) -> str:
+    """HTML-escape a string for safe embedding in markup."""
+    return html_lib.escape(str(s)) if s is not None else ""
 
 # ── CSS ──────────────────────────────────────────────────────────────────────
 st.markdown(f"""
@@ -808,10 +810,10 @@ def fetch_ufc_news(count: int = 25) -> list[dict]:
 
 def _fighter_card_html(f: dict, img_url: str) -> str:
     """Build HTML for a fighter bg-card with image on the right."""
-    name = f.get("name", "Unknown")
+    name = esc(f.get("name", "Unknown"))
     parts = name.split()
-    first = parts[0] if parts else ""
-    last = " ".join(parts[1:]).upper() if len(parts) > 1 else first.upper()
+    first = esc(parts[0]) if parts else ""
+    last = esc(" ".join(parts[1:]).upper()) if len(parts) > 1 else esc(parts[0].upper() if parts else "")
     if not last:
         last = first.upper()
         first = ""
@@ -862,12 +864,12 @@ def display_fighter_cards(fa: dict, fb: dict):
 
 def display_winner(prediction: dict):
     """Render the side-highlight winner display."""
-    winner = prediction["predicted_winner"]
-    loser = prediction.get("predicted_loser", "")
+    winner = esc(prediction["predicted_winner"])
+    loser = esc(prediction.get("predicted_loser", ""))
     confidence = prediction["confidence"]
 
-    winner_last = winner.split()[-1].upper() if winner else "?"
-    loser_last = loser.split()[-1].upper() if loser else "?"
+    winner_last = esc(winner.split()[-1].upper()) if winner else "?"
+    loser_last = esc(loser.split()[-1].upper()) if loser else "?"
     loser_conf = 100 - confidence
 
     st.markdown(
@@ -883,10 +885,10 @@ def _render_confidence(prediction: dict):
     """HTML confidence bar with names outside so they never get cut off."""
     prob_a = prediction["probability_a"]
     prob_b = prediction["probability_b"]
-    fa_name = prediction["fighter_a"]["name"]
-    fb_name = prediction["fighter_b"]["name"]
-    fa_last = fa_name.split()[-1].upper()
-    fb_last = fb_name.split()[-1].upper()
+    fa_name = esc(prediction["fighter_a"]["name"])
+    fb_name = esc(prediction["fighter_b"]["name"])
+    fa_last = esc(fa_name.split()[-1].upper())
+    fb_last = esc(fb_name.split()[-1].upper())
     st.markdown(
         f'<div style="background:{CARD_BG};border-radius:16px;padding:1.5rem;margin:0.5rem 0;">'
         f'<div style="font-family:{BF};color:{AC};font-size:0.95rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:1.2rem;">WIN PROBABILITY</div>'
@@ -911,8 +913,8 @@ def _render_feature_importance(prediction: dict):
         st.markdown(f'<div style="background:{CARD_BG};border-radius:16px;padding:2rem;text-align:center;color:{AC};font-family:{BF};">No feature importance data available</div>', unsafe_allow_html=True)
         return
 
-    fa_name = prediction["fighter_a"]["name"]
-    fb_name = prediction["fighter_b"]["name"]
+    fa_name = esc(prediction["fighter_a"]["name"])
+    fb_name = esc(prediction["fighter_b"]["name"])
 
     feature_display = {
         "height_cm": "Height", "weight_kg": "Weight", "reach_cm": "Reach",
@@ -1004,8 +1006,8 @@ def _render_tale_of_tape(prediction: dict):
             f'</div>'
         )
 
-    fa_last = fa["name"].split()[-1].upper()
-    fb_last = fb["name"].split()[-1].upper()
+    fa_last = esc(fa["name"].split()[-1].upper())
+    fb_last = esc(fb["name"].split()[-1].upper())
 
     st.markdown(
         f'<div style="background:{CARD_BG};border-radius:16px;padding:1.5rem;margin:0.5rem 0;">'
@@ -1086,8 +1088,8 @@ def _render_radar_chart(prediction: dict):
     dots_a = "".join(f'<circle cx="{polar_point(i, vals_a[i])[0]:.1f}" cy="{polar_point(i, vals_a[i])[1]:.1f}" r="4" fill="{AC}"/>' for i in range(n))
     dots_b = "".join(f'<circle cx="{polar_point(i, vals_b[i])[0]:.1f}" cy="{polar_point(i, vals_b[i])[1]:.1f}" r="4" fill="#666"/>' for i in range(n))
 
-    fa_last = fa["name"].split()[-1]
-    fb_last = fb["name"].split()[-1]
+    fa_last = esc(fa["name"].split()[-1])
+    fb_last = esc(fb["name"].split()[-1])
 
     svg = (
         f'<svg viewBox="0 0 500 460" xmlns="http://www.w3.org/2000/svg" style="max-width:500px;margin:0 auto;display:block;">'
@@ -1109,32 +1111,35 @@ def _render_radar_chart(prediction: dict):
     )
 
 
-def _render_historical_trends(prediction: dict):
-    """HTML recent form display."""
+def _render_historical_trends(prediction: dict, fights_df: pd.DataFrame = None):
+    """HTML recent form display using real fight history."""
     fa = prediction["fighter_a"]
     fb = prediction["fighter_b"]
 
     def build_form(fighter):
+        name = fighter.get("name", "")
+        if fights_df is not None and len(fights_df) > 0:
+            fighter_fights = fights_df[
+                (fights_df["fighter_a"] == name) | (fights_df["fighter_b"] == name)
+            ].head(5)
+            results = []
+            for _, fight in fighter_fights.iterrows():
+                results.append("W" if fight.get("winner") == name else "L")
+            return results
+        # Fallback: use win streak then fill with record ratio
+        streak = fighter.get("win_streak", 0)
         wins = fighter.get("wins", 0)
         losses = fighter.get("losses", 0)
         total = max(wins + losses, 1)
-        win_rate = wins / total
-        streak = fighter.get("win_streak", 0)
         n = min(5, total)
-        results = []
-        for i in range(n):
-            if i < streak:
-                results.append("W")
-            else:
-                results.append("W" if np.random.random() < win_rate else "L")
-        results.reverse()
+        results = ["W"] * min(streak, n) + ["L"] * (n - min(streak, n))
         return results
 
     form_a = build_form(fa)
     form_b = build_form(fb)
 
     def form_html(fighter, form, color):
-        name = fighter["name"].split()[-1].upper()
+        name = esc(fighter["name"].split()[-1].upper())
         dots = ""
         for r in form:
             bg = color if r == "W" else "#333"
@@ -1338,7 +1343,7 @@ def _render_fight_detail(fight_url: str, selected_fighter: str):
             )
 
 
-def display_prediction(prediction: dict):
+def display_prediction(prediction: dict, fights_df: pd.DataFrame = None):
     """Display full prediction results with visualizations."""
     if "error" in prediction:
         st.error(f"Could not predict: {prediction['error']}")
@@ -1373,7 +1378,7 @@ def display_prediction(prediction: dict):
     with tab4:
         _render_radar_chart(prediction)
     with tab5:
-        _render_historical_trends(prediction)
+        _render_historical_trends(prediction, fights_df)
 
     # Reasons breakdown
     st.markdown('<div class="section-header">Prediction Breakdown</div>', unsafe_allow_html=True)
@@ -1470,8 +1475,8 @@ def main():
                 upcoming_fc = {}
 
         if upcoming_fc and upcoming_fc.get("fights"):
-            fc_evt = upcoming_fc.get('event', 'Unknown Event')
-            fc_date = upcoming_fc.get('date', 'TBD')
+            fc_evt = esc(upcoming_fc.get('event', 'Unknown Event'))
+            fc_date = esc(upcoming_fc.get('date', 'TBD'))
             st.markdown(f'<div class="event-header"><div class="event-name">{fc_evt}</div><div class="event-detail">{fc_date}</div></div>', unsafe_allow_html=True)
 
             if "fc_results" not in st.session_state:
@@ -1500,7 +1505,7 @@ def main():
                         st.rerun()
 
                     if is_active:
-                        display_prediction(pred)
+                        display_prediction(pred, fights_df)
         else:
             st.info("No upcoming events found.")
 
@@ -1523,7 +1528,7 @@ def main():
                 with st.spinner("Wrapping the hands..."):
                     try:
                         prediction = predictor.predict_matchup(fighter_a, fighter_b)
-                        display_prediction(prediction)
+                        display_prediction(prediction, fights_df)
                     except ValueError as e:
                         st.error(f"Error: {e}")
 
@@ -1541,14 +1546,14 @@ def main():
                 img_url = get_fighter_image_url(f_name)
                 initials = get_fighter_initials(f_name)
                 parts = f_name.split()
-                first = parts[0] if parts else ""
-                last = " ".join(parts[1:]).upper() if len(parts) > 1 else first.upper()
+                first = esc(parts[0]) if parts else ""
+                last = esc(" ".join(parts[1:]).upper()) if len(parts) > 1 else esc(parts[0].upper() if parts else "")
                 if not last:
                     last = first.upper()
                     first = ""
 
-                record = f"{int(f.get('wins', 0))}-{int(f.get('losses', 0))}-{int(f.get('draws', 0))}"
-                stance = f.get("stance", "") or "Unknown"
+                record = esc(f"{int(f.get('wins', 0))}-{int(f.get('losses', 0))}-{int(f.get('draws', 0))}")
+                stance = esc(f.get("stance", "") or "Unknown")
                 dob = f.get("dob", "")
                 age_str = ""
                 if dob and str(dob) != "nan":

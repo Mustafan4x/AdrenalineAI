@@ -35,8 +35,8 @@ jobs:
 
       - name: Commit and push if data changed
         run: |
-          git config user.name "Mustafan4x"
-          git config user.email "Mustafa421670@gmail.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/fighters.csv data/fights.csv data/upcoming.json
           if git diff --cached --quiet; then
             echo "No data changes to commit."

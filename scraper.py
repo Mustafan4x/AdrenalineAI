@@ -28,11 +28,18 @@ HEADERS = {
 }
 
 
-def _get_soup(url: str) -> BeautifulSoup:
-    """Fetch a URL and return a BeautifulSoup object."""
-    resp = requests.get(url, headers=HEADERS, timeout=30)
-    resp.raise_for_status()
-    return BeautifulSoup(resp.text, "lxml")
+def _get_soup(url: str, retries: int = 3) -> BeautifulSoup:
+    """Fetch a URL and return a BeautifulSoup object with retry on failure."""
+    for attempt in range(retries):
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=30)
+            resp.raise_for_status()
+            return BeautifulSoup(resp.text, "lxml")
+        except (requests.RequestException, requests.HTTPError) as e:
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
+            else:
+                raise
 
 
 def _parse_height_to_cm(height_str: str) -> float | None:

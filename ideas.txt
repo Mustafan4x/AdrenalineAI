@@ -1,4 +1,0 @@
-Add a login
-Try to make it less command line-y and easier to use for non-technical people on setup
-Cut out garbage files at the end
-Fix accuracy since last time only got 9/13 right aka 70%
