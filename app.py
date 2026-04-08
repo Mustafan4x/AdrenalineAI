@@ -22,7 +22,6 @@ from scraper import (
     build_fighter_database,
     build_fight_history_database,
     get_upcoming_card,
-    incremental_update,
     scrape_fighter_details,
     scrape_fight_detail,
     HEADERS,
@@ -1826,24 +1825,9 @@ def main():
         )
         st.markdown(
             f'<div style="font-family:{BF};color:{T["TEXT_DIM"]};font-size:1.1rem;margin-bottom:0.8rem;">'
-            f'Scrape the latest events and update fighter stats. Takes 1-2 minutes.</div>',
+            f'Fighter stats and fight history update automatically after each UFC event.</div>',
             unsafe_allow_html=True,
         )
-        if st.button("Update Data", type="primary"):
-            status_text = st.empty()
-            def _progress(msg):
-                status_text.markdown(
-                    f'<div style="font-family:{BF};color:{AC};font-size:0.85rem;">{msg}</div>',
-                    unsafe_allow_html=True,
-                )
-            with st.spinner("Updating..."):
-                result = incremental_update(max_new_events=5, progress_callback=_progress)
-            if result["new_fights"] > 0:
-                st.success(f"Added {result['new_fights']} fights, updated {result['updated_fighters']} fighters.")
-                st.cache_resource.clear()
-                st.rerun()
-            else:
-                st.info("Already up to date — no new events found.")
 
 
 if __name__ == "__main__":

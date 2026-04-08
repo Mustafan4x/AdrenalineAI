@@ -1,0 +1,46 @@
+name: Update UFC Data
+
+on:
+  schedule:
+    # Every Monday at 08:00 UTC (after Sunday fight nights)
+    - cron: "0 8 * * 1"
+    # Every Sunday at 08:00 UTC (after Saturday fight nights)
+    - cron: "0 8 * * 0"
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run incremental update
+        run: |
+          python -c "
+          from scraper import incremental_update
+          result = incremental_update(max_new_events=5, progress_callback=print)
+          print(f'New fights: {result[\"new_fights\"]}, Updated fighters: {result[\"updated_fighters\"]}')
+          if result['new_fights'] == 0:
+              print('No new data found.')
+          "
+
+      - name: Commit and push if data changed
+        run: |
+          git config user.name "Mustafan4x"
+          git config user.email "Mustafa421670@gmail.com"
+          git add data/fighters.csv data/fights.csv data/upcoming.json
+          if git diff --cached --quiet; then
+            echo "No data changes to commit."
+          else
+            git commit -m "Auto-update UFC data $(date -u +%Y-%m-%d)"
+            git push
+          fi
