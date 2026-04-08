@@ -738,7 +738,7 @@ def load_fights():
     return build_fight_history_database(use_cache=True)
 
 @st.cache_resource(show_spinner=False)
-def get_trained_model(_fighters_df, _fights_df):
+def get_trained_model(_fighters_df, _fights_df, _version=2):
     predictor = UFCPredictor()
     predictor.load_data(_fighters_df, _fights_df)
     predictor.train()
@@ -1492,15 +1492,10 @@ def main():
 
             if st.button("PREDICT ENTIRE CARD", type="primary", use_container_width=True):
                 with st.spinner("Sizing up the competition..."):
-                    try:
-                        live_odds = fetch_upcoming_odds()
-                        st.session_state.fc_results = predictor.predict_card(upcoming_fc["fights"], live_odds)
-                        st.session_state.active_fc = 0
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Prediction error: {type(e).__name__}: {e}")
-                        import traceback
-                        st.code(traceback.format_exc())
+                    live_odds = fetch_upcoming_odds()
+                    st.session_state.fc_results = predictor.predict_card(upcoming_fc["fights"], live_odds)
+                    st.session_state.active_fc = 0
+                    st.rerun()
 
             if st.session_state.fc_results:
                 for i, pred in enumerate(st.session_state.fc_results):
