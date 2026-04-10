@@ -97,7 +97,7 @@ def _loading_screen(text: str | None = None):
         f'<img src="{LOGO_SRC}" style="width:80px;height:80px;object-fit:contain;'
         f'filter:{LOGO_FILTER};margin-bottom:1.5rem;'
         f'animation:pulse 1.5s ease-in-out infinite;" />'
-        f'<div style="font-family:{HF};color:{AC};font-size:1.6rem;letter-spacing:2px;">ADRENALINE</div>'
+        f'<div style="font-family:{HF};color:{AC};font-size:1.6rem;letter-spacing:2px;">ADRENALINE<span style="font-size:0.9em;">AI</span></div>'
         f'<div style="font-family:{BF};color:{T["TEXT_MUTED"]};font-size:1rem;margin-top:0.8rem;letter-spacing:1px;">{saying}</div>'
         f'</div>'
         f'<style>@keyframes pulse {{ 0%,100% {{ opacity:1; }} 50% {{ opacity:0.4; }} }}</style>',
@@ -1431,7 +1431,7 @@ def main():
     else:
         stats_inner = f'<div class="h-stat"><span class="h-num">{n_fighters}</span><span class="h-label">Fighters</span></div><div class="h-divider"></div><div class="h-stat"><span class="h-num">{n_fights}</span><span class="h-label">Fights</span></div>'
 
-    st.markdown(f'<div class="header-bar"><div style="display:flex;align-items:center;gap:0.8rem;"><img src="{LOGO_SRC}" style="width:80px;height:80px;object-fit:contain;filter:{LOGO_FILTER};"><div class="brand">ADRENALINE</div></div><div class="header-stats">{stats_inner}</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="header-bar"><div style="display:flex;align-items:center;gap:0.8rem;"><img src="{LOGO_SRC}" style="width:80px;height:80px;object-fit:contain;filter:{LOGO_FILTER};"><div class="brand">ADRENALINE<span style="font-size:0.85em;">AI</span></div></div><div class="header-stats">{stats_inner}</div></div>', unsafe_allow_html=True)
 
     # ── Navigation via underline tabs ────────────────────────────────────────
     fighter_names = sorted(fighters_clean["name"].dropna().unique().tolist())
